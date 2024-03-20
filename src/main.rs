@@ -19,8 +19,8 @@ fn main() {
         Err(_) => panic!("Failed to read file"),
     };
 
-    let regex_input = read_line();
-    let re = match Regex::new(&regex_input) { //(?<=(\"|\"1))test(?=\")
+    let commands = get_commands();
+    let re = match Regex::new(&commands.find) {
         Ok(ok) => ok,
         Err(_) => panic!("Failed to compile regex"),
     };
@@ -36,6 +36,30 @@ fn main() {
     }
 }
 
+fn get_commands() -> Commands {
+    let input_string = read_line();
+    let mut commands: Commands = Default::default();
+    let input_split: Vec<&str> = input_string.split(" ").collect();
+    match input_split.get(0).unwrap() {
+        &"f" => commands.operation = Operation::Find,
+        &"r" => commands.operation = Operation::Replace,
+        _ => commands.operation = Operation::None
+    }
+
+    match (input_split.len(), &commands.operation) {
+        (2, Operation::Find) => {
+            commands.find = input_split.get(1).unwrap_or(&"").to_string();
+        }
+        (3, Operation::Replace) => {
+            commands.find = input_split.get(1).unwrap_or(&"").to_string();
+            commands.replace = input_split.get(2).unwrap_or(&"").to_string();
+        }
+        (_, _) => panic!("Incorrect number of command params")
+
+    };
+    return commands;
+}
+
 fn read_line() -> String {
     print!(":");
     std::io::Write::flush(&mut std::io::stdout()).unwrap_or_default();
@@ -44,4 +68,23 @@ fn read_line() -> String {
     let len = buffer.trim_end_matches(&['\r', '\n'][..]).len();
     buffer.truncate(len);
     return buffer;
+}
+
+#[derive(Default)]
+struct Commands {
+    operation: Operation,
+    find: String,
+    replace: String,
+    output_file: String
+}
+
+#[derive(PartialEq)]
+pub enum Operation {
+    None,
+    Find,
+    Replace
+}
+
+impl Default for Operation {
+    fn default() -> Self { Operation::None }
 }
