@@ -1,9 +1,17 @@
 use onig::Regex;
+use std::fs::File;
+use std::io::prelude::*;
+use std::env;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    let mut file = File::open(args.get(1).unwrap()).unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+
     let regex_input = read_line();
     let re = Regex::new(&regex_input).unwrap(); //(?<=(\"|\"1))test(?=\")
-    let match_test = re.captures_iter("craietciaestnaciesrn\"test\"aicerntaiecnteain\"1test\"");
+    let match_test = re.captures_iter(&contents);
     for captures in match_test {
         println!("{}", captures.at(0).unwrap());
     }
