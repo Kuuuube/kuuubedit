@@ -23,11 +23,13 @@ pub fn get_commands() -> Commands {
         (3, Operation::Replace) => {
             commands.find = input_split.get(1).unwrap_or(&"").to_string();
             commands.replace = input_split.get(2).unwrap_or(&"").to_string();
+            commands.destructive = true;
         },
         (4, Operation::ReplaceWrite) => {
             commands.find = input_split.get(1).unwrap_or(&"").to_string();
             commands.replace = input_split.get(2).unwrap_or(&"").to_string();
             commands.output_file = input_split.get(3).unwrap_or(&"").to_string();
+            commands.destructive = true;
         },
         (2, Operation::Write) => {
             commands.output_file = input_split.get(1).unwrap_or(&"").to_string();
@@ -56,5 +58,6 @@ pub struct Commands {
     pub operation: Operation,
     pub find: String,
     pub replace: String,
-    pub output_file: String
+    pub output_file: String,
+    pub destructive: bool
 }

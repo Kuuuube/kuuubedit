@@ -16,13 +16,15 @@ fn main() {
     loop {
         let commands = commands::get_commands();
 
+        if commands.destructive {
+            previous_file_contents = file_contents.clone();
+        }
+
         if commands.operation == Operation::Find {
             operations::find(&commands.find, &file_contents, &commands.output_file).expect("Failed to complete find");
         } else if commands.operation == Operation::Replace {
-            previous_file_contents = file_contents.clone();
             file_contents = operations::replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
         } else if commands.operation == Operation::ReplaceWrite {
-            previous_file_contents = file_contents.clone();
             file_contents = operations::replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
             operations::write(&file_contents, &commands.output_file).expect("Failed to write file");
         } else if commands.operation == Operation::Write {
