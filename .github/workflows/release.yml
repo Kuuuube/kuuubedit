@@ -1,14 +1,22 @@
 name: Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version_suffix:
+        description: 'The version suffix for this manual build.'
+        required: false
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    env:
+      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +39,10 @@ jobs:
 
   build-win:
     runs-on: windows-latest
+    env:
+      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
