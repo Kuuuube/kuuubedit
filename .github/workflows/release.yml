@@ -1,19 +1,14 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
-    inputs:
-      version_suffix:
-        description: 'The version suffix for this manual build.'
-        required: true
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-
-    env:
-      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +21,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           name: kuuubedit v${{ github.ref_name }}
           files: target/release/kuuubedit_amd64
@@ -35,10 +30,6 @@ jobs:
 
   build-win:
     runs-on: windows-latest
-
-    env:
-      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,7 +42,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           name: kuuubedit v${{ github.ref_name }}
           files: target/release/kuuubedit.exe
