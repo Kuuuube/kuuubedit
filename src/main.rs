@@ -17,7 +17,7 @@ fn main() {
     loop {
         let commands = match commands::get_commands() {
             Some(some) => some,
-            None => {println!("Unknown command or incorrect number of command params"); continue}
+            None => { println!("Unknown command or incorrect number of command params"); continue }
         };
 
         if args.undo && commands.destructive {
