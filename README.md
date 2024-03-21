@@ -10,7 +10,7 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 ### Optional
 
-- `--undo`: Enables the undo command.
+- `-u`, `--undo`: Enables the undo command.
 
 ## Commands
 
