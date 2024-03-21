@@ -14,6 +14,8 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 ## Commands
 
+Use double quotes around values containing spaces. Use `\"` for a literal double quote.
+
 - **Find**
 
     `f FIND_REGEX OUTPUT_FILE`: Initiate regex find operation and output results to file.
