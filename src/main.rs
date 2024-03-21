@@ -36,7 +36,8 @@ fn main() {
             operations::output(&file_contents).expect("Failed to output file");
         } else if commands.operation == Operation::Undo {
             if previous_file_contents == String::new() {
-                println!("Failed to undo, file history not available")
+                println!("Failed to undo, file history not available");
+                continue;
             }
             file_contents = previous_file_contents;
             previous_file_contents = String::new();
