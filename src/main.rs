@@ -14,7 +14,10 @@ fn main() {
     let mut previous_file_contents = String::new();
 
     loop {
-        let commands = commands::get_commands();
+        let commands = match commands::get_commands() {
+            Some(some) => some,
+            None => {println!("Unknown command or incorrect number of command params"); continue}
+        };
 
         if commands.destructive {
             previous_file_contents = file_contents.clone();

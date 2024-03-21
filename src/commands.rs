@@ -1,6 +1,6 @@
 use crate::operations::Operation;
 
-pub fn get_commands() -> Commands {
+pub fn get_commands() -> Option<Commands> {
     let input_string = read_line();
     let mut commands: Commands = Default::default();
     let input_split: Vec<&str> = input_string.split(" ").collect();
@@ -15,31 +15,29 @@ pub fn get_commands() -> Commands {
         _ => commands.operation = Operation::None
     }
 
-    match (input_split.len(), &commands.operation) {
-        (3, Operation::Find) => {
-            commands.find = input_split.get(1).unwrap_or(&"").to_string();
-            commands.output_file = input_split.get(2).unwrap_or(&"").to_string();
+    match &commands.operation {
+        Operation::Find => {
+            commands.find = input_split.get(1)?.to_string();
+            commands.output_file = input_split.get(2)?.to_string();
         },
-        (3, Operation::Replace) => {
-            commands.find = input_split.get(1).unwrap_or(&"").to_string();
-            commands.replace = input_split.get(2).unwrap_or(&"").to_string();
+        Operation::Replace => {
+            commands.find = input_split.get(1)?.to_string();
+            commands.replace = input_split.get(2)?.to_string();
             commands.destructive = true;
         },
-        (4, Operation::ReplaceWrite) => {
-            commands.find = input_split.get(1).unwrap_or(&"").to_string();
-            commands.replace = input_split.get(2).unwrap_or(&"").to_string();
-            commands.output_file = input_split.get(3).unwrap_or(&"").to_string();
+        Operation::ReplaceWrite => {
+            commands.find = input_split.get(1)?.to_string();
+            commands.replace = input_split.get(2)?.to_string();
+            commands.output_file = input_split.get(3)?.to_string();
             commands.destructive = true;
         },
-        (2, Operation::Write) => {
-            commands.output_file = input_split.get(1).unwrap_or(&"").to_string();
+        Operation::Write => {
+            commands.output_file = input_split.get(1)?.to_string();
         },
-        (1, Operation::Output | Operation::Undo | Operation::Quit) => {},
-        (_, Operation::None) => {},
-        (_, _) => {commands.operation = Operation::None; println!("Incorrect number of command params")}
-
+        Operation::Output | Operation::Undo | Operation::Quit => {}
+        Operation::None => return None
     };
-    return commands;
+    return Some(commands);
 }
 
 fn read_line() -> String {
