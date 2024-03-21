@@ -2,14 +2,23 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version_suffix:
+        description: 'The version suffix for this manual build.'
+        required: true
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
 
+    env:
+      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup dependencies
       - run: rustup update stable && rustup default stable
 
       - name: Build
@@ -19,17 +28,22 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: ${{ github.event_name == 'workflow_dispatch' }}
         with:
-          files: |
-            target/release/kuuubedit_amd64
+          name: kuuubedit v${{ github.ref_name }}
+          files: target/release/kuuubedit_amd64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-win:
     runs-on: windows-latest
 
+    env:
+      VERSION_SUFFIX: ${{ github.event.inputs.version_suffix }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup dependencies
       - run: rustup update stable && rustup default stable
 
       - name: Build
@@ -39,6 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: ${{ github.event_name == 'workflow_dispatch' }}
         with:
+          name: kuuubedit v${{ github.ref_name }}
           files: target/release/kuuubedit.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
