@@ -22,3 +22,4 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 - `o`: Output to stdout.
 
+- `q`: Quit.
