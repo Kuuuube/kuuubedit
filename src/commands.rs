@@ -10,6 +10,7 @@ pub fn get_commands() -> Commands {
         &"rw" => commands.operation = Operation::ReplaceWrite,
         &"w" => commands.operation = Operation::Write,
         &"o" => commands.operation = Operation::Output,
+        &"u" => commands.operation = Operation::Undo,
         &"q" => commands.operation = Operation::Quit,
         _ => commands.operation = Operation::None
     }
@@ -31,7 +32,7 @@ pub fn get_commands() -> Commands {
         (2, Operation::Write) => {
             commands.output_file = input_split.get(1).unwrap_or(&"").to_string();
         },
-        (1, Operation::Output | Operation::Quit) => {},
+        (1, Operation::Output | Operation::Undo | Operation::Quit) => {},
         (_, Operation::None) => {},
         (_, _) => {commands.operation = Operation::None; println!("Incorrect number of command params")}
 
