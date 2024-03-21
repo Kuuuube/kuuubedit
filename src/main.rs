@@ -17,6 +17,9 @@ fn main() {
             find(&commands.find, &file_contents, &commands.output_file).expect("Failed to complete find");
         } else if commands.operation == Operation::Replace {
             file_contents = replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
+        } else if commands.operation == Operation::ReplaceWrite {
+            file_contents = replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
+            write(&file_contents, &commands.output_file).expect("Failed to write file");
         } else if commands.operation == Operation::Write {
             write(&file_contents, &commands.output_file).expect("Failed to write file");
         } else if commands.operation == Operation::Output {
@@ -61,6 +64,7 @@ fn get_commands() -> Commands {
     match input_split.get(0).unwrap() {
         &"f" => commands.operation = Operation::Find,
         &"r" => commands.operation = Operation::Replace,
+        &"rw" => commands.operation = Operation::ReplaceWrite,
         &"w" => commands.operation = Operation::Write,
         &"o" => commands.operation = Operation::Output,
         &"q" => commands.operation = Operation::Quit,
@@ -75,6 +79,11 @@ fn get_commands() -> Commands {
         (3, Operation::Replace) => {
             commands.find = input_split.get(1).unwrap_or(&"").to_string();
             commands.replace = input_split.get(2).unwrap_or(&"").to_string();
+        },
+        (4, Operation::ReplaceWrite) => {
+            commands.find = input_split.get(1).unwrap_or(&"").to_string();
+            commands.replace = input_split.get(2).unwrap_or(&"").to_string();
+            commands.output_file = input_split.get(3).unwrap_or(&"").to_string();
         },
         (2, Operation::Write) => {
             commands.output_file = input_split.get(1).unwrap_or(&"").to_string();
@@ -110,8 +119,10 @@ pub enum Operation {
     None,
     Find,
     Replace,
+    ReplaceWrite,
     Write,
     Output,
+    Undo,
     Quit
 }
 
