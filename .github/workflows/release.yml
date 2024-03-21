@@ -10,13 +10,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install latest rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-          override: true
+      - run: rustup update stable && rustup default stable
 
       - name: Build
         run: cargo build --all --release && strip target/release/kuuubedit && mv target/release/kuuubedit target/release/kuuubedit_amd64
@@ -36,13 +30,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install latest rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-          override: true
+      - run: rustup update stable && rustup default stable
 
       - name: Build
         run: cargo build --all --release
@@ -52,32 +40,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: target/release/kuuubedit.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-mac:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install latest rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-apple-darwin
-          default: true
-          override: true
-
-      - name: Build for mac
-        run: cargo build --all --release && strip target/release/kuuubedit && mv target/release/kuuubedit target/release/kuuubedit_darwin
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            target/release/kuuubedit_darwin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
