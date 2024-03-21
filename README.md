@@ -14,14 +14,30 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 ## Commands
 
-- `f FIND_REGEX OUTPUT_FILE`: Initiate regex find operation and output results to file.
+- **Find**
 
-- `r FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file.
+    `f FIND_REGEX OUTPUT_FILE`: Initiate regex find operation and output results to file.
 
-- `rw FIND_REGEX REPLACE_STRING OUTPUT_FILE`: Initiate regex replace operation on currently open file and write result to file.
+- **Replace**
 
-- `w OUTPUT_FILE`: Write current file to file.
+    `r FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file.
 
-- `o`: Output current file to stdout.
+- **Replace Write**
 
-- `q`: Quit.
+    `rw FIND_REGEX REPLACE_STRING OUTPUT_FILE`: Initiate regex replace operation on currently open file and write result to file.
+
+- **Write**
+
+    `w OUTPUT_FILE`: Write current file to file.
+
+- **Output**
+
+    `o`: Output current file to stdout.
+
+- **Undo**
+
+    `u`: Undoes the last operation.
+
+- **Quit**
+
+    `q`: Exits the program.
