@@ -1,13 +1,13 @@
 mod operations;
-mod commands;
 use operations::Operation;
+mod commands;
+mod args_parser;
 use std::fs::File;
 use std::io::prelude::*;
-use std::env;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let file_path = args.get(1).expect("Invalid args");
+    let args: args_parser::Args = args_parser::parse_args();
+    let file_path = args.file;
     let mut file = File::open(file_path).expect("Failed to open file");
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents).expect("Failed to read file");
@@ -19,7 +19,7 @@ fn main() {
             None => {println!("Unknown command or incorrect number of command params"); continue}
         };
 
-        if commands.destructive {
+        if args.undo && commands.destructive {
             previous_file_contents = file_contents.clone();
         }
 
@@ -35,6 +35,10 @@ fn main() {
         } else if commands.operation == Operation::Output {
             operations::output(&file_contents).expect("Failed to output file");
         } else if commands.operation == Operation::Undo {
+            if !args.undo {
+                println!("Undo is not enabled, pass the `--undo` arg to enable it");
+                continue;
+            }
             if previous_file_contents == String::new() {
                 println!("Failed to undo, file history not available");
                 continue;
