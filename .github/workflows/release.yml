@@ -2,10 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version_suffix:
-        description: 'The version suffix for this manual build.'
-        required: false
 
 jobs:
   build:
