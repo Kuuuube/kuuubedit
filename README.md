@@ -6,7 +6,7 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 ### Mandatory
 
-- `FILE`
+- `kuuubedit FILE`: File to open.
 
 ### Optional
 
@@ -14,11 +14,11 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 ## Commands
 
-- `f`: Initiate regex find operation.
+- `f FIND_REGEX OUTPUT_FILE`: Initiate regex find operation and output results to file.
 
-- `r`: Initiate regex replace operation.
+- `r FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file.
 
-- `w`: Write output to file.
+- `w OUTPUT_FILE`: Write output to file.
 
 - `o`: Output to stdout.
 
