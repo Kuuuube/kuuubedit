@@ -12,6 +12,7 @@ fn main() {
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents).expect("Failed to read file");
     let mut previous_file_contents = String::new();
+    let mut undo_available = false;
 
     loop {
         let commands = match commands::get_commands() {
@@ -21,6 +22,7 @@ fn main() {
 
         if args.undo && commands.destructive {
             previous_file_contents = file_contents.clone();
+            undo_available = true;
         }
 
         if commands.operation == Operation::Find {
@@ -39,12 +41,13 @@ fn main() {
                 println!("Undo is not enabled, pass the `--undo` arg to enable it");
                 continue;
             }
-            if previous_file_contents == String::new() {
+            if !undo_available {
                 println!("Failed to undo, file history not available");
                 continue;
             }
             file_contents = previous_file_contents;
             previous_file_contents = String::new();
+            undo_available = false;
         } else if commands.operation == Operation::Quit {
             return;
         }
