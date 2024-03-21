@@ -1,9 +1,11 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      input_tag:
+        description: 'Tag name:'
+        required: true
 
 jobs:
   build-linux:
@@ -25,8 +27,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: kuuubedit v${{ github.ref_name }}
-          draft: true
           files: target/release/kuuubedit_amd64
+          tag_name: ${{ github.event.inputs.input_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -49,7 +51,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: kuuubedit v${{ github.ref_name }}
-          draft: true
           files: target/release/kuuubedit.exe
+          tag_name: ${{ github.event.inputs.input_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
