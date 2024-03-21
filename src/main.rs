@@ -1,8 +1,6 @@
 mod operations;
-use operations::Operation;
 mod commands;
-
-
+use operations::Operation;
 use std::fs::File;
 use std::io::prelude::*;
 use std::env;
