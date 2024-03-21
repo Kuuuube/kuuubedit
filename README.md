@@ -18,8 +18,8 @@ Powerful headless text editor for processing enormous files. (Currently unfinish
 
 - `r FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file.
 
-- `w OUTPUT_FILE`: Write output to file.
+- `w OUTPUT_FILE`: Write current file to file.
 
-- `o`: Output to stdout.
+- `o`: Output current file to stdout.
 
 - `q`: Quit.
