@@ -18,7 +18,7 @@ jobs:
         run: rustup update stable && rustup default stable
 
       - name: Build
-        run: cargo build --all --release && strip target/release/kuuubedit && tar -czvf target/release/kuuubedit_${{ github.ref_name }}_linux_x64.tar.gz target/release/kuuubedit
+        run: cargo build --all --release && strip target/release/kuuubedit && tar -czvf kuuubedit_${{ github.ref_name }}_linux_x64.tar.gz kuuubedit --directory=target/release
 
       - name: Release
         uses: softprops/action-gh-release@v2
