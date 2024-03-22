@@ -6,11 +6,15 @@ Powerful headless text editor for processing enormous files.
 
 ### Mandatory
 
-- `kuuubedit FILE`: File to open.
+- `kuuubedit FILEPATH`: File to open.
 
 ### Optional
 
 - `-u`, `--undo`: Enables the undo command.
+
+- `-b BUFFER`, `--buffer BUFFER`: Sets file buffer size (unfinished, currently, only --no-buf is supported).
+
+- `--no-buf`: Disables file buffering.
 
 ## Commands
 

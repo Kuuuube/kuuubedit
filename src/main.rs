@@ -18,8 +18,13 @@ fn main() {
     loop {
         let commands = match commands::get_commands() {
             Some(some) => some,
-            None => { println!("Unknown command or incorrect number of command params"); continue }
+            None => { println!("Invalid command or incorrect number of command params"); continue }
         };
+
+        if !args.no_buf && commands.no_buffer {
+            println!("This command is only available when the `--no-buf` arg is passed");
+            continue;
+        }
 
         if args.undo && commands.destructive {
             previous_file_contents = Some(file_contents.clone());
@@ -43,7 +48,7 @@ fn main() {
             unwrap_result_or_continue!(operations::output(&file_contents), "Failed to output file");
         } else if commands.operation == Operation::Undo {
             if !args.undo {
-                println!("Undo is not enabled, pass the `--undo` arg to enable it");
+                println!("Undo is only available when the `--undo` arg is passed");
                 continue;
             }
             file_contents = unwrap_option_or_continue!(previous_file_contents, "Failed to undo, file history not available");

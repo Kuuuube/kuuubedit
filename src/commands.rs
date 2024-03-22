@@ -24,6 +24,7 @@ pub fn get_commands() -> Option<Commands> {
             commands.find = input_split.get(1)?.to_string();
             commands.replace = input_split.get(2)?.to_string();
             commands.destructive = true;
+            commands.no_buffer = true;
         },
         Operation::ReplaceWrite => {
             commands.find = input_split.get(1)?.to_string();
@@ -34,7 +35,8 @@ pub fn get_commands() -> Option<Commands> {
         Operation::Write => {
             commands.output_file = input_split.get(1)?.to_string();
         },
-        Operation::Output | Operation::Undo | Operation::Quit => {}
+        Operation::Output | Operation::Undo => { commands.no_buffer = true; },
+        Operation::Quit => {},
         Operation::None => return None
     };
     return Some(commands);
@@ -91,5 +93,6 @@ pub struct Commands {
     pub find: String,
     pub replace: String,
     pub output_file: String,
-    pub destructive: bool
+    pub destructive: bool,
+    pub no_buffer: bool
 }
