@@ -1,4 +1,5 @@
 mod operations;
+mod macros;
 use operations::Operation;
 mod commands;
 mod args_parser;
@@ -32,34 +33,16 @@ fn main() {
         };
 
         if commands.operation == Operation::Find {
-            match operations::find(find_regex, &file_contents, &commands.output_file) {
-                Ok(_) => {},
-                Err(err) => { println!("Failed to complete find: {}", err); continue},
-            };
+            unwrap_or_continue!(operations::find(find_regex, &file_contents, &commands.output_file), "Failed to complete find");
         } else if commands.operation == Operation::Replace {
-            file_contents = match operations::replace(find_regex, &commands.replace, &file_contents) {
-                Ok(ok) => ok,
-                Err(err) => { println!("Failed to complete replace: {}", err); continue},
-            };
+            file_contents = unwrap_or_continue!(operations::replace(find_regex, &commands.replace, &file_contents), "Failed to complete replace");
         } else if commands.operation == Operation::ReplaceWrite {
-            file_contents = match operations::replace(find_regex, &commands.replace, &file_contents) {
-                Ok(ok) => ok,
-                Err(err) => { println!("Failed to complete replace: {}", err); continue},
-            };
-            match operations::write(&file_contents, &commands.output_file) {
-                Ok(_) => {},
-                Err(err) => { println!("Failed to write file: {}", err); continue},
-            };
+            file_contents = unwrap_or_continue!(operations::replace(find_regex, &commands.replace, &file_contents),"Failed to complete replace");
+            unwrap_or_continue!(operations::write(&file_contents, &commands.output_file), "Failed to write file");
         } else if commands.operation == Operation::Write {
-            match operations::write(&file_contents, &commands.output_file) {
-                Ok(_) => {},
-                Err(err) => { println!("Failed to write file: {}", err); continue},
-            };
+            unwrap_or_continue!(operations::write(&file_contents, &commands.output_file), "Failed to write file");
         } else if commands.operation == Operation::Output {
-            match operations::output(&file_contents) {
-                Ok(_) => {},
-                Err(err) => { println!("Failed to output file: {}", err); continue},
-            };
+            unwrap_or_continue!(operations::output(&file_contents), "Failed to output file");
         } else if commands.operation == Operation::Undo {
             if !args.undo {
                 println!("Undo is not enabled, pass the `--undo` arg to enable it");
