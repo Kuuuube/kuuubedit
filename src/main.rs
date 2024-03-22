@@ -4,6 +4,7 @@ mod commands;
 mod args_parser;
 use std::fs::File;
 use std::io::prelude::*;
+use onig::Regex;
 
 fn main() {
     let args: args_parser::Args = args_parser::parse_args();
@@ -25,12 +26,17 @@ fn main() {
             undo_available = true;
         }
 
+        let find_regex = match Regex::new(&commands.find) {
+            Ok(ok) => ok,
+            Err(err) => { println!("Failed to compile regex: {}", err); continue },
+        };
+
         if commands.operation == Operation::Find {
-            operations::find(&commands.find, &file_contents, &commands.output_file).expect("Failed to complete find");
+            operations::find(find_regex, &file_contents, &commands.output_file).expect("Failed to complete find");
         } else if commands.operation == Operation::Replace {
-            file_contents = operations::replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
+            file_contents = operations::replace(find_regex, &commands.replace, &file_contents).expect("Failed to complete replace");
         } else if commands.operation == Operation::ReplaceWrite {
-            file_contents = operations::replace(&commands.find, &commands.replace, &file_contents).expect("Failed to complete replace");
+            file_contents = operations::replace(find_regex, &commands.replace, &file_contents).expect("Failed to complete replace");
             operations::write(&file_contents, &commands.output_file).expect("Failed to write file");
         } else if commands.operation == Operation::Write {
             operations::write(&file_contents, &commands.output_file).expect("Failed to write file");
