@@ -63,15 +63,6 @@ fn main() {
             }
 
             if !args.no_buf {
-/*                 if file_offset + buffer_size > file_size {
-                    file_buffer = vec![0u8; buffer_size as usize];
-                    file.read_at(&mut file_buffer, file_offset).unwrap();
-                    file_contents = std::str::from_utf8(&file_buffer).unwrap().trim_end_matches('\x00').to_string();
-                } else {
-                    file.read_at(&mut file_buffer, file_offset).unwrap();
-                    //this fails when encountering multi-byte characters split on the buffer boundary that are invalid unicode when alone
-                    file_contents = std::str::from_utf8(&file_buffer).unwrap().to_string();
-                } */
                 if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
                     file_buffer.clear();
                     file.read_to_end(&mut file_buffer).unwrap();
