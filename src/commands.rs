@@ -56,7 +56,7 @@ fn parse_command(command_string: &str) -> Vec<String> {
                 command_split.push(chars_vec.into_iter().collect());
                 chars_vec = Default::default();
             },
-            ('\\', '"', true) => {
+            ('\\', '"', _) => {
                 chars_vec.push('"');
                 i += 1;
             },
