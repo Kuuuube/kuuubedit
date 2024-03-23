@@ -5,11 +5,12 @@ mod commands;
 mod args_parser;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 use onig::Regex;
 
 fn main() {
     let args: args_parser::Args = args_parser::parse_args();
-    let file_path = args.file;
+    let file_path = &args.file;
 
     let mut file = File::open(file_path).expect("Failed to open file");
 
@@ -49,6 +50,11 @@ fn main() {
             Ok(ok) => ok,
             Err(err) => { println!("Failed to compile regex: {}", err); continue },
         };
+
+        if &commands.output_file != &String::default() && unwrap_result_or_continue!(std::fs::canonicalize(Path::new(&commands.output_file)), "Failed to validate file path") == unwrap_result_or_continue!(std::fs::canonicalize(Path::new(file_path)), "Failed to validate file path") {
+            println!("Cannot overwrite currently open file");
+            continue;
+        }
 
         let output_file = File::create(commands.output_file);
 
