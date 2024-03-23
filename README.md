@@ -10,7 +10,7 @@ Powerful headless text editor for processing enormous files.
 
 ### Optional
 
-- `-u`, `--undo`: Enables the undo command.
+- `-u`, `--undo`: Enables the undo command and `--no-buf`.
 
 - `-b BUFFER`, `--buffer BUFFER`: Sets file buffer size in bytes. Default: 100000000 (100MB), Minimum: 1024 (1KB), Maximum: 18446744073709551615 (18.4EB).
 

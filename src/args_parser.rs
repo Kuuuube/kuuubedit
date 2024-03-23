@@ -5,7 +5,7 @@ use core::str::FromStr;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    /// Enables the undo command
+    /// Enables the undo command and --no-buf
     #[arg(short, long)]
     pub undo: bool,
 
@@ -49,5 +49,9 @@ fn stringify<T: std::fmt::Display>(e: T) -> String {
 //
 
 pub fn parse_args() -> Args {
-    return Args::parse();
+    let mut args = Args::parse();
+    if args.undo {
+        args.no_buf = true;
+    }
+    return args;
 }
