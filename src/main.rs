@@ -4,14 +4,14 @@ use operations::Operation;
 mod commands;
 mod args_parser;
 use std::fs::File;
-use std::os::unix::prelude::FileExt;
+use std::io::prelude::*;
 use onig::Regex;
 
 fn main() {
     let args: args_parser::Args = args_parser::parse_args();
     let file_path = args.file;
 
-    let file = File::open(file_path).expect("Failed to open file");
+    let mut file = File::open(file_path).expect("Failed to open file");
 
     let file_size = file.metadata().unwrap().len();
     let buffer_size: u64 = if args.no_buf || args.buffer > file_size {
@@ -23,15 +23,17 @@ fn main() {
     let mut file_buffer = vec![0u8; buffer_size as usize];
 
     let mut file_contents = if args.no_buf {
-        file.read_at(&mut file_buffer, 0).unwrap();
-        std::str::from_utf8(&file_buffer).unwrap().to_string()
+        let mut string_buffer = String::default();
+        file.read_to_string(&mut string_buffer).unwrap();
+        string_buffer
     } else {
         String::default()
     };
     let mut previous_file_contents: Option<String> = None;
 
     loop {
-        let mut file_offset = 0;
+        file_buffer.clear();
+        file.seek(std::io::SeekFrom::Start(0)).unwrap();
 
         let commands = match commands::get_commands() {
             Some(some) => some,
@@ -50,14 +52,18 @@ fn main() {
 
         let output_file = File::create(commands.output_file);
 
-        while file_offset < file_size {
+        let mut eof = false;
+
+        while !eof {
+            if args.no_buf {
+                eof = true;
+            }
             if args.undo && commands.destructive {
                 previous_file_contents = Some(file_contents.clone());
             }
 
-            //clear buffer and trim string on last chunk of file
             if !args.no_buf {
-                if file_offset + buffer_size > file_size {
+/*                 if file_offset + buffer_size > file_size {
                     file_buffer = vec![0u8; buffer_size as usize];
                     file.read_at(&mut file_buffer, file_offset).unwrap();
                     file_contents = std::str::from_utf8(&file_buffer).unwrap().trim_end_matches('\x00').to_string();
@@ -65,7 +71,23 @@ fn main() {
                     file.read_at(&mut file_buffer, file_offset).unwrap();
                     //this fails when encountering multi-byte characters split on the buffer boundary that are invalid unicode when alone
                     file_contents = std::str::from_utf8(&file_buffer).unwrap().to_string();
+                } */
+                if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
+                    file_buffer.clear();
+                    file.read_to_end(&mut file_buffer).unwrap();
+                    eof = true;
+                } else {
+                    file.read(&mut file_buffer).unwrap();
                 }
+                file_contents = match std::str::from_utf8(&file_buffer) {
+                    Ok(ok) => { ok.to_string() },
+                    Err(err) => {
+                        file.seek(std::io::SeekFrom::Current(buffer_size as i64 * -1)).unwrap();
+                        file_buffer.resize(err.valid_up_to(), b'\x00');
+                        file.read_exact(&mut file_buffer).unwrap();
+                        std::str::from_utf8(&file_buffer).unwrap().to_string()
+                    },
+                };
             }
 
             if commands.operation == Operation::Find {
@@ -90,7 +112,7 @@ fn main() {
                 return;
             }
 
-            file_offset += buffer_size;
+            file_buffer.resize(buffer_size as usize, b'\x00');
         }
     }
 }
