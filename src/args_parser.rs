@@ -10,11 +10,12 @@ pub struct Args {
     pub undo: bool,
 
     /// Sets file buffer size
-    #[arg(short, long, default_value_t = 100000000, value_parser = buffer_size_check)]
+    /// [min: 1024] [max: 18446744073709551615]
+    #[arg(short, long, default_value_t = 100000000, value_parser = buffer_size_check, verbatim_doc_comment)]
     pub buffer: u64,
 
     /// Disables file buffering
-    #[arg(long)]
+    #[arg(short, long)]
     pub no_buf: bool,
 
     /// Path to file to open

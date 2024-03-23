@@ -1,8 +1,6 @@
 # Kuuubedit
 
-Powerful headless text editor for processing large files.
-
-WARNING: Files are not buffered, the file size capable of being loaded is limited by your memory size.
+Powerful headless text editor for processing enormous files.
 
 ## Args
 
@@ -14,7 +12,9 @@ WARNING: Files are not buffered, the file size capable of being loaded is limite
 
 - `-u`, `--undo`: Enables the undo command.
 
-- `-b BUFFER`, `--buffer BUFFER`: Sets file buffer size (unfinished, currently, only --no-buf is supported).
+- `-b BUFFER`, `--buffer BUFFER`: Sets file buffer size in bytes. Default: 100000000 (100MB), Minimum: 1024 (1KB), Maximum: 18446744073709551615 (18.4EB).
+
+- `-n`, `--no-buf`: Disabled file buffering.
 
 ## Commands
 
