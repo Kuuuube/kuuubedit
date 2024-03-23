@@ -21,11 +21,6 @@ fn main() {
             None => { println!("Invalid command or incorrect number of command params"); continue }
         };
 
-        if !args.no_buf && commands.no_buffer {
-            println!("This command is only available when the `--no-buf` arg is passed");
-            continue;
-        }
-
         if args.undo && commands.destructive {
             previous_file_contents = Some(file_contents.clone());
         }
