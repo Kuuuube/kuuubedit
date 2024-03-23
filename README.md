@@ -1,6 +1,6 @@
 # Kuuubedit
 
-Powerful headless text editor for processing enormous files.
+Powerful headless text editor for processing enormous files using complex regex patterns.
 
 ## Args
 
