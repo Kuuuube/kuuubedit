@@ -9,7 +9,7 @@ macro_rules! unwrap_result_or_continue {
     ($res:expr) => {
         match $res {
             Ok(ok) => ok,
-            Err(err) => { continue; }
+            Err(_) => { continue; }
         }
     };
 }
