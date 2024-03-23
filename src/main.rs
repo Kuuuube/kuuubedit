@@ -51,7 +51,7 @@ fn main() {
             Err(err) => { println!("Failed to compile regex: {}", err); continue },
         };
 
-        if &commands.output_file != &String::default() && unwrap_result_or_continue!(std::fs::canonicalize(Path::new(&commands.output_file)), "Failed to validate file path") == unwrap_result_or_continue!(std::fs::canonicalize(Path::new(file_path)), "Failed to validate file path") {
+        if &commands.output_file != &String::default() && std::fs::canonicalize(Path::new(&commands.output_file)).unwrap_or_default() == std::fs::canonicalize(Path::new(file_path)).unwrap_or_default() {
             println!("Cannot overwrite currently open file");
             continue;
         }
