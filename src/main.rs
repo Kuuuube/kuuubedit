@@ -74,8 +74,8 @@ fn main() {
             if commands.operation == Operation::Find {
                 commands.output_file = unwrap_result_or_break!(operations::find(&commands.find_regex, &file_contents, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Replace {
-                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents),"Failed to complete replace");
-                commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
+                let regex_result = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents),"Failed to complete replace");
+                commands.output_file = unwrap_result_or_break!(operations::write(&regex_result, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Write {
                 commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
             }
