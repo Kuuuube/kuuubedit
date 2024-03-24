@@ -35,7 +35,6 @@ fn main() {
     loop {
         let mut commands = unwrap_result_or_continue!(commands::get_commands(&args), "");
 
-        file_buffer.clear();
         unwrap_result_or_continue!(file.seek(std::io::SeekFrom::Start(0)), "Failed to reset file stream position");
 
         if args.undo && commands.destructive {
@@ -66,18 +65,10 @@ fn main() {
                 } else {
                     unwrap_result_or_break!(file.read(&mut file_buffer), "Failed to read file chunk");
                 }
-                file_contents = match std::str::from_utf8(&file_buffer) {
-                    Ok(ok) => { ok.to_string() },
-                    Err(err) => {
-                        unwrap_result_or_break!(file.seek(std::io::SeekFrom::Current(buffer_size as i64 * -1)), "Failed to seek in file");
-                        file_buffer.resize(err.valid_up_to(), b'\x00');
-                        unwrap_result_or_break!(file.read_exact(&mut file_buffer), "Failed to re-read file chunk");
-                        std::str::from_utf8(&file_buffer).unwrap_or({
-                            println!("Invalid UTF-8 detected, output may not match input: {}", err);
-                            unsafe { std::str::from_utf8_unchecked(&file_buffer) }
-                        }).to_string()
-                    },
-                };
+                let seek_position;
+                (file_contents, seek_position) = parse_utf8(&file_buffer);
+
+                unwrap_result_or_break!(file.seek(std::io::SeekFrom::Current(seek_position as i64 - buffer_size as i64)), "Failed to seek in file");
             }
 
             if commands.operation == Operation::Find {
@@ -99,8 +90,22 @@ fn main() {
             }
 
             if end_loop { break; }
-
-            file_buffer.resize(buffer_size as usize, b'\x00');
         }
     }
+}
+
+fn parse_utf8(file_buffer: &Vec<u8>) -> (String, usize) {
+    let mut seek_position: usize = file_buffer.len();
+    let utf8_string = match std::str::from_utf8(file_buffer) {
+        Ok(ok) => { ok.to_string() },
+        Err(err) => {
+            seek_position = err.valid_up_to();
+            std::str::from_utf8(&file_buffer[0..=seek_position]).unwrap_or({
+                println!("Invalid UTF-8 detected, output may not match input: {}", err);
+                seek_position = 0;
+                unsafe { std::str::from_utf8_unchecked(&file_buffer) }
+            }).to_string()
+        },
+    };
+    (utf8_string, seek_position)
 }
