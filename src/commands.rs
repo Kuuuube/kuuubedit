@@ -16,12 +16,13 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
         "o" => commands.operation = Operation::Output,
         "u" => commands.operation = Operation::Undo,
         "q" => commands.operation = Operation::Quit,
+        "v" => commands.operation = Operation::View,
         _ => commands.operation = Err(KuuubeditError::CommandName)?
     }
 
     //
     match &commands.operation {
-        Operation::Find | Operation::Replace | Operation::Write | Operation::Quit => {}
+        Operation::Find | Operation::Replace | Operation::Write | Operation::Quit | Operation::View => {}
         Operation::ReplaceActive | Operation::Output | Operation::Undo => if !args.no_buf { Err(KuuubeditError::CommandBuffer)? },
     }
 
@@ -40,13 +41,17 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
             commands.output_file = Some(get_output_file(&args.file, input_split.get(3).ok_or(KuuubeditError::CommandParams)?)?);
             commands.destructive = true;
         },
+        Operation::Write => {
+            commands.output_file = Some(get_output_file(&args.file, input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?);
+        },
+        Operation::View => {
+            commands.view_start = u64::from_str_radix(input_split.get(1).ok_or(KuuubeditError::CommandParams)?, 10)?;
+            commands.view_length = usize::from_str_radix(input_split.get(2).ok_or(KuuubeditError::CommandParams)?, 10)?;
+        }
         Operation::ReplaceActive => {
             commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
             commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?)?;
             commands.destructive = true;
-        },
-        Operation::Write => {
-            commands.output_file = Some(get_output_file(&args.file, input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?);
         },
         Operation::Output | Operation::Undo | Operation::Quit => {}
     };
@@ -65,11 +70,21 @@ pub struct Commands {
     pub find_regex: onig::Regex,
     pub replace: String,
     pub output_file: Option<File>,
-    pub destructive: bool
+    pub destructive: bool,
+    pub view_start: u64,
+    pub view_length: usize
 }
 
 impl Default for Commands {
     fn default() -> Self {
-        Self { operation: Default::default(), find_regex: onig::Regex::new("").unwrap(), replace: Default::default(), output_file: Default::default(), destructive: Default::default() }
+        Self {
+            operation: Default::default(),
+            find_regex: onig::Regex::new("").unwrap(),
+            replace: Default::default(),
+            output_file: Default::default(),
+            destructive: Default::default(),
+            view_start: Default::default(),
+            view_length: Default::default()
+        }
     }
 }

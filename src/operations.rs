@@ -33,6 +33,7 @@ pub enum Operation {
     Replace,
     ReplaceActive,
     Write,
+    View,
     Output,
     Undo,
     Quit

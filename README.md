@@ -34,6 +34,12 @@ Use double quotes around values containing spaces. Use `\"` for a literal double
 
     `w OUTPUT_FILE`: Write current file to file.
 
+- **View**
+
+    `v START_BYTE LENGTH`: Output string from file data of specified length in bytes starting from the specified byte.
+
+    Invalid unicode may be outputted if a multi-byte UTF-8 character is split apart by the range specified. These characters are displayed using `�` and may not represent the full file data.
+
 - **Quit**
 
     `q`: Exits the program.
