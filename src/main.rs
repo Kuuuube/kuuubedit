@@ -100,11 +100,14 @@ fn parse_utf8(file_buffer: &Vec<u8>) -> (String, usize) {
         Ok(ok) => { ok.to_string() },
         Err(err) => {
             seek_position = err.valid_up_to();
-            std::str::from_utf8(&file_buffer[0..=seek_position]).unwrap_or({
+            if seek_position == 0 {
                 println!("Invalid UTF-8 detected, output may not match input: {}", err);
-                seek_position = 0;
-                unsafe { std::str::from_utf8_unchecked(&file_buffer) }
-            }).to_string()
+                seek_position = file_buffer.len();
+                unsafe { std::str::from_utf8_unchecked(&file_buffer) }.to_string()
+            } else {
+                //should never panic as long as seek_position = err.valid_up_to()
+                std::str::from_utf8(&file_buffer[0..seek_position]).unwrap().to_string()
+            }
         },
     };
     (utf8_string, seek_position)
