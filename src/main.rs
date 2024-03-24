@@ -74,14 +74,14 @@ fn main() {
             if commands.operation == Operation::Find {
                 commands.output_file = unwrap_result_or_break!(operations::find(&commands.find_regex, &file_contents, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Replace {
-                let regex_result = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents),"Failed to complete replace");
+                let regex_result = operations::replace(&commands.find_regex, &commands.replace, &file_contents);
                 commands.output_file = unwrap_result_or_break!(operations::write(&regex_result, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Write {
                 commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
             }
             //--no-buf only
             else if commands.operation == Operation::ReplaceActive {
-                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents), "Failed to complete replace");
+                file_contents = operations::replace(&commands.find_regex, &commands.replace, &file_contents);
             } else if commands.operation == Operation::Output {
                 println!("{}", file_contents);
             } else if commands.operation == Operation::Undo {

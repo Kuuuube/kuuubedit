@@ -12,8 +12,8 @@ pub fn find(find_regex_compiled: &Regex, file_contents: &str, output_file_option
     Ok(Some(output_file))
 }
 
-pub fn replace(find_regex_compiled: &Regex, replace_string: &str, file_contents: &str) -> Result<String, Box<dyn std::error::Error>> {
-    Ok(find_regex_compiled.replace_all(file_contents, replace_string))
+pub fn replace(find_regex_compiled: &Regex, replace_string: &str, file_contents: &str) -> String {
+    return find_regex_compiled.replace_all(file_contents, replace_string);
 }
 
 pub fn write(file_contents: &str, output_file_option: Option<File>) -> Result<Option<File>, Box<dyn std::error::Error>> {
