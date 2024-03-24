@@ -22,11 +22,6 @@ pub fn write(file_contents: &str, output_file_option: Option<File>) -> Result<Op
     Ok(Some(output_file))
 }
 
-pub fn output(file_contents: &str) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", file_contents);
-    Ok(())
-}
-
 #[derive(PartialEq)]
 pub enum Operation {
     Find,

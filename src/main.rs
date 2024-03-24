@@ -83,7 +83,7 @@ fn main() {
             else if commands.operation == Operation::ReplaceActive {
                 file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents), "Failed to complete replace");
             } else if commands.operation == Operation::Output {
-                unwrap_result_or_break!(operations::output(&file_contents), "Failed to output file");
+                println!("{}", file_contents);
             } else if commands.operation == Operation::Undo {
                 file_contents = unwrap_option_or_break!(previous_file_contents, "Failed to undo, file history not available");
                 previous_file_contents = None;
