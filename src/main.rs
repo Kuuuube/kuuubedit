@@ -73,10 +73,12 @@ fn main() {
             } else if commands.operation == Operation::Replace {
                 file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents),"Failed to complete replace");
                 commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
-            } else if commands.operation == Operation::ReplaceActive {
-                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents), "Failed to complete replace");
             } else if commands.operation == Operation::Write {
                 commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
+            }
+            //--no-buf only
+            else if commands.operation == Operation::ReplaceActive {
+                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents), "Failed to complete replace");
             } else if commands.operation == Operation::Output {
                 unwrap_result_or_break!(operations::output(&file_contents), "Failed to output file");
             } else if commands.operation == Operation::Undo {
