@@ -20,7 +20,6 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
         _ => commands.operation = Err(KuuubeditError::CommandName)?
     }
 
-    //
     match &commands.operation {
         Operation::Find | Operation::Replace | Operation::Write | Operation::Quit | Operation::View => {}
         Operation::ReplaceActive | Operation::Output | Operation::Undo => if !args.no_buf { Err(KuuubeditError::CommandBuffer)? },
