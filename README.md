@@ -26,9 +26,9 @@ Use double quotes around values containing spaces. Use `\"` for a literal double
 
     `f FIND_REGEX OUTPUT_FILE`: Initiate regex find operation and output results to file.
 
-- **Replace Write**
+- **Replace**
 
-    `rw FIND_REGEX REPLACE_STRING OUTPUT_FILE`: Initiate regex replace operation on currently open file and write result to file.
+    `r FIND_REGEX REPLACE_STRING OUTPUT_FILE`: Initiate regex replace operation on currently open file and write result to file.
 
 - **Write**
 
@@ -40,9 +40,9 @@ Use double quotes around values containing spaces. Use `\"` for a literal double
 
 ### --no-buf only
 
-- **Replace**
+- **Replace Active**
 
-    `r FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file.
+    `ra FIND_REGEX REPLACE_STRING`: Initiate regex replace operation on currently open file and overwrite loaded file data in memory with result.
 
 - **Output**
 

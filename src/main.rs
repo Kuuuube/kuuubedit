@@ -90,10 +90,10 @@ fn main() {
             if commands.operation == Operation::Find {
                 unwrap_result_or_continue!(operations::find(&find_regex, &file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to complete find");
             } else if commands.operation == Operation::Replace {
-                file_contents = unwrap_result_or_continue!(operations::replace(&find_regex, &commands.replace, &file_contents), "Failed to complete replace");
-            } else if commands.operation == Operation::ReplaceWrite {
                 file_contents = unwrap_result_or_continue!(operations::replace(&find_regex, &commands.replace, &file_contents),"Failed to complete replace");
                 unwrap_result_or_continue!(operations::write(&file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to write file");
+            } else if commands.operation == Operation::ReplaceActive {
+                file_contents = unwrap_result_or_continue!(operations::replace(&find_regex, &commands.replace, &file_contents), "Failed to complete replace");
             } else if commands.operation == Operation::Write {
                 unwrap_result_or_continue!(operations::write(&file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to write file");
             } else if commands.operation == Operation::Output {

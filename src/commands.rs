@@ -7,7 +7,7 @@ pub fn get_commands() -> Option<Commands> {
     match input_split.get(0).unwrap().as_str() {
         "f" => commands.operation = Operation::Find,
         "r" => commands.operation = Operation::Replace,
-        "rw" => commands.operation = Operation::ReplaceWrite,
+        "ra" => commands.operation = Operation::ReplaceActive,
         "w" => commands.operation = Operation::Write,
         "o" => commands.operation = Operation::Output,
         "u" => commands.operation = Operation::Undo,
@@ -23,14 +23,14 @@ pub fn get_commands() -> Option<Commands> {
         Operation::Replace => {
             commands.find = input_split.get(1)?.to_string();
             commands.replace = unescape(input_split.get(2)?);
-            commands.destructive = true;
-            commands.no_buffer = true;
-        },
-        Operation::ReplaceWrite => {
-            commands.find = input_split.get(1)?.to_string();
-            commands.replace = unescape(input_split.get(2)?);
             commands.output_file = input_split.get(3)?.to_string();
             commands.destructive = true;
+        },
+        Operation::ReplaceActive => {
+            commands.find = input_split.get(1)?.to_string();
+            commands.replace = unescape(input_split.get(2)?);
+            commands.destructive = true;
+            commands.no_buffer = true;
         },
         Operation::Write => {
             commands.output_file = input_split.get(1)?.to_string();

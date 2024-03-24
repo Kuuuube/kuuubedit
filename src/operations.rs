@@ -29,7 +29,7 @@ pub enum Operation {
     None,
     Find,
     Replace,
-    ReplaceWrite,
+    ReplaceActive,
     Write,
     Output,
     Undo,
