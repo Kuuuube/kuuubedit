@@ -58,11 +58,11 @@ fn main() {
 
         let output_file = File::create(commands.output_file);
 
-        let mut eof = false;
+        let mut end_loop = false;
 
-        while !eof {
+        while !end_loop {
             if args.no_buf {
-                eof = true;
+                end_loop = true;
             }
             if args.undo && commands.destructive {
                 previous_file_contents = Some(file_contents.clone());
@@ -72,7 +72,7 @@ fn main() {
                 if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
                     file_buffer.clear();
                     file.read_to_end(&mut file_buffer).unwrap();
-                    eof = true;
+                    end_loop = true;
                 } else {
                     file.read(&mut file_buffer).unwrap();
                 }
