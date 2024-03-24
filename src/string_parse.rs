@@ -44,7 +44,7 @@ pub fn read_line() -> String {
 }
 
 //https://github.com/BurntSushi/ripgrep/blob/a2e6aec7a4d9382941932245e8854f0ae5703a5e/crates/cli/src/escape.rs
-pub fn unescape(s: &str) -> String {
+pub fn unescape(s: &str) -> Result<String, Box<dyn std::error::Error>> {
     use self::State::*;
 
     let mut bytes = vec![];
@@ -88,7 +88,7 @@ pub fn unescape(s: &str) -> String {
             HexSecond(first) => match c {
                 '0'..='9' | 'A'..='F' | 'a'..='f' => {
                     let ordinal = format!("{}{}", first, c);
-                    let byte = u8::from_str_radix(&ordinal, 16).unwrap();
+                    let byte = u8::from_str_radix(&ordinal, 16)?;
                     bytes.push(byte);
                     state = Literal;
                 }
@@ -114,7 +114,7 @@ pub fn unescape(s: &str) -> String {
         HexSecond(c) => bytes.extend(format!("\\x{}", c).into_bytes()),
         Literal => {}
     }
-    std::str::from_utf8(&bytes).unwrap().to_string()
+    Ok(std::str::from_utf8(&bytes)?.to_string())
 }
 
 enum State {

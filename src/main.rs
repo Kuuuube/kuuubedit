@@ -33,10 +33,10 @@ fn main() {
     let mut previous_file_contents: Option<String> = None;
 
     loop {
-        file_buffer.clear();
-        file.seek(std::io::SeekFrom::Start(0)).unwrap();
-
         let mut commands = unwrap_result_or_continue!(commands::get_commands(&args), "");
+
+        file_buffer.clear();
+        unwrap_result_or_continue!(file.seek(std::io::SeekFrom::Start(0)), "Failed to reset file stream position");
 
         if args.undo && commands.destructive {
             previous_file_contents = Some(file_contents.clone());
@@ -50,20 +50,23 @@ fn main() {
             }
 
             if !args.no_buf {
-                if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
+                if unwrap_result_or_break!(file.stream_position(), "Failed to get stream position") + buffer_size > file_size {
                     file_buffer.clear();
-                    file.read_to_end(&mut file_buffer).unwrap();
+                    unwrap_result_or_break!(file.read_to_end(&mut file_buffer), "Failed to read last file chunk");
                     end_loop = true;
                 } else {
-                    file.read(&mut file_buffer).unwrap();
+                    unwrap_result_or_break!(file.read(&mut file_buffer), "Failed to read file chunk");
                 }
                 file_contents = match std::str::from_utf8(&file_buffer) {
                     Ok(ok) => { ok.to_string() },
                     Err(err) => {
-                        file.seek(std::io::SeekFrom::Current(buffer_size as i64 * -1)).unwrap();
+                        unwrap_result_or_break!(file.seek(std::io::SeekFrom::Current(buffer_size as i64 * -1)), "Failed to seek in file");
                         file_buffer.resize(err.valid_up_to(), b'\x00');
-                        file.read_exact(&mut file_buffer).unwrap();
-                        std::str::from_utf8(&file_buffer).unwrap().to_string()
+                        unwrap_result_or_break!(file.read_exact(&mut file_buffer), "Failed to re-read file chunk");
+                        std::str::from_utf8(&file_buffer).unwrap_or({
+                            println!("Invalid UTF-8 detected, output may not match input: {}", err);
+                            unsafe { std::str::from_utf8_unchecked(&file_buffer) }
+                        }).to_string()
                     },
                 };
             }

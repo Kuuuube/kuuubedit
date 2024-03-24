@@ -8,7 +8,7 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
     let input_string = read_line();
     let mut commands: Commands = Default::default();
     let input_split: Vec<String> = parse_command_string(&input_string);
-    match input_split.get(0).unwrap().as_str() {
+    match input_split.get(0).ok_or(KuuubeditError::CommandParams)?.as_str() {
         "f" => commands.operation = Operation::Find,
         "r" => commands.operation = Operation::Replace,
         "ra" => commands.operation = Operation::ReplaceActive,
@@ -36,13 +36,13 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
         },
         Operation::Replace => {
             commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
-            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?);
+            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?)?;
             commands.output_file = Some(get_output_file(&args.file, input_split.get(3).ok_or(KuuubeditError::CommandParams)?)?);
             commands.destructive = true;
         },
         Operation::ReplaceActive => {
             commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
-            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?);
+            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?)?;
             commands.destructive = true;
         },
         Operation::Write => {
