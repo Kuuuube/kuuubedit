@@ -1,9 +1,13 @@
 use crate::operations::Operation;
+use crate::string_parse::*;
+use crate::kuuubediterror::KuuubeditError;
+use std::fs::File;
+use std::path::Path;
 
-pub fn get_commands() -> Option<Commands> {
+pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn std::error::Error>> {
     let input_string = read_line();
     let mut commands: Commands = Default::default();
-    let input_split: Vec<String> = parse_command(&input_string);
+    let input_split: Vec<String> = parse_command_string(&input_string);
     match input_split.get(0).unwrap().as_str() {
         "f" => commands.operation = Operation::Find,
         "r" => commands.operation = Operation::Replace,
@@ -12,172 +16,60 @@ pub fn get_commands() -> Option<Commands> {
         "o" => commands.operation = Operation::Output,
         "u" => commands.operation = Operation::Undo,
         "q" => commands.operation = Operation::Quit,
-        _ => commands.operation = Operation::None
+        _ => commands.operation = Err(KuuubeditError::CommandName)?
+    }
+
+    //
+    match &commands.operation {
+        Operation::Find | Operation::Replace | Operation::Write | Operation::Quit => {}
+        Operation::ReplaceActive | Operation::Output | Operation::Undo => if !args.no_buf { Err(KuuubeditError::CommandBuffer)? },
+    }
+
+    if commands.operation == Operation::Undo && !args.undo {
+        Err(KuuubeditError::CommandUndo)?
     }
 
     match &commands.operation {
         Operation::Find => {
-            commands.find = input_split.get(1)?.to_string();
-            commands.output_file = input_split.get(2)?.to_string();
+            commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
+            commands.output_file = Some(get_output_file(&args.file, input_split.get(2).ok_or(KuuubeditError::CommandParams)?)?);
         },
         Operation::Replace => {
-            commands.find = input_split.get(1)?.to_string();
-            commands.replace = unescape(input_split.get(2)?);
-            commands.output_file = input_split.get(3)?.to_string();
+            commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
+            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?);
+            commands.output_file = Some(get_output_file(&args.file, input_split.get(3).ok_or(KuuubeditError::CommandParams)?)?);
             commands.destructive = true;
         },
         Operation::ReplaceActive => {
-            commands.find = input_split.get(1)?.to_string();
-            commands.replace = unescape(input_split.get(2)?);
+            commands.find_regex = onig::Regex::new(input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?;
+            commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?);
             commands.destructive = true;
-            commands.no_buffer = true;
         },
         Operation::Write => {
-            commands.output_file = input_split.get(1)?.to_string();
+            commands.output_file = Some(get_output_file(&args.file, input_split.get(1).ok_or(KuuubeditError::CommandParams)?)?);
         },
-        Operation::Output | Operation::Undo => {commands.no_buffer = true;},
-        Operation::Quit => {},
-        Operation::None => return None
+        Operation::Output | Operation::Undo | Operation::Quit => {}
     };
-    return Some(commands);
+    return Ok(commands);
 }
 
-fn parse_command(command_string: &str) -> Vec<String> {
-    let mut chars_vec: Vec<char> = Default::default();
-    let command_chars: Vec<char> = command_string.chars().collect();
-    let mut command_split: Vec<String> = Default::default();
-    let mut inside_quotes: bool = false;
-    let mut i: usize = 0;
-    while i < command_chars.len() {
-        let current_char = command_chars.get(i).unwrap_or(&char::default()).to_owned();
-        let next_char = command_chars.get(i + 1).unwrap_or(&char::default()).to_owned();
-        match (current_char, next_char, inside_quotes) {
-            (' ', _, false) => {
-                command_split.push(chars_vec.into_iter().collect());
-                chars_vec = Default::default();
-            },
-            ('\\', '"', _) => {
-                chars_vec.push('"');
-                i += 1;
-            },
-            ('"', _, false) => {
-                inside_quotes = true;
-            },
-            ('"', _, true) => {
-                inside_quotes = false;
-            },
-            _ => { chars_vec.push(current_char) }
-        }
-        i += 1;
-        if i == command_chars.len() {
-            command_split.push(chars_vec.into_iter().collect());
-            chars_vec = Default::default();
-        }
+fn get_output_file(input_filepath: &str, output_filepath: &str) -> Result<File, Box<dyn std::error::Error>> {
+    if std::fs::canonicalize(Path::new(output_filepath)).unwrap_or_default() == std::fs::canonicalize(Path::new(input_filepath)).unwrap_or_default() {
+        Err(KuuubeditError::InputOutputMatch)?
     }
-    return command_split;
+    return Ok(File::create(output_filepath)?)
 }
 
-#[derive(Default)]
 pub struct Commands {
     pub operation: Operation,
-    pub find: String,
+    pub find_regex: onig::Regex,
     pub replace: String,
-    pub output_file: String,
-    pub destructive: bool,
-    pub no_buffer: bool
+    pub output_file: Option<File>,
+    pub destructive: bool
 }
 
-fn read_line() -> String {
-    print!(":");
-    std::io::Write::flush(&mut std::io::stdout()).unwrap_or_default();
-    let mut buffer = String::default();
-    std::io::stdin().read_line(&mut buffer).unwrap_or_default();
-    let len = buffer.trim_end_matches(&['\r', '\n'][..]).len();
-    buffer.truncate(len);
-    return buffer.trim().to_string();
-}
-
-//https://github.com/BurntSushi/ripgrep/blob/a2e6aec7a4d9382941932245e8854f0ae5703a5e/crates/cli/src/escape.rs
-pub fn unescape(s: &str) -> String {
-    use self::State::*;
-
-    let mut bytes = vec![];
-    let mut state = Literal;
-    for c in s.chars() {
-        match state {
-            Escape => match c {
-                '\\' => {
-                    bytes.push(b'\\');
-                    state = Literal;
-                }
-                'n' => {
-                    bytes.push(b'\n');
-                    state = Literal;
-                }
-                'r' => {
-                    bytes.push(b'\r');
-                    state = Literal;
-                }
-                't' => {
-                    bytes.push(b'\t');
-                    state = Literal;
-                }
-                'x' => {
-                    state = HexFirst;
-                }
-                c => {
-                    bytes.extend(format!(r"\{}", c).into_bytes());
-                    state = Literal;
-                }
-            },
-            HexFirst => match c {
-                '0'..='9' | 'A'..='F' | 'a'..='f' => {
-                    state = HexSecond(c);
-                }
-                c => {
-                    bytes.extend(format!(r"\x{}", c).into_bytes());
-                    state = Literal;
-                }
-            },
-            HexSecond(first) => match c {
-                '0'..='9' | 'A'..='F' | 'a'..='f' => {
-                    let ordinal = format!("{}{}", first, c);
-                    let byte = u8::from_str_radix(&ordinal, 16).unwrap();
-                    bytes.push(byte);
-                    state = Literal;
-                }
-                c => {
-                    let original = format!(r"\x{}{}", first, c);
-                    bytes.extend(original.into_bytes());
-                    state = Literal;
-                }
-            },
-            Literal => match c {
-                '\\' => {
-                    state = Escape;
-                }
-                c => {
-                    bytes.extend(c.to_string().as_bytes());
-                }
-            },
-        }
+impl Default for Commands {
+    fn default() -> Self {
+        Self { operation: Default::default(), find_regex: onig::Regex::new("").unwrap(), replace: Default::default(), output_file: Default::default(), destructive: Default::default() }
     }
-    match state {
-        Escape => bytes.push(b'\\'),
-        HexFirst => bytes.extend(b"\\x"),
-        HexSecond(c) => bytes.extend(format!("\\x{}", c).into_bytes()),
-        Literal => {}
-    }
-    std::str::from_utf8(&bytes).unwrap().to_string()
-}
-
-enum State {
-    /// The state after seeing a `\`.
-    Escape,
-    /// The state after seeing a `\x`.
-    HexFirst,
-    /// The state after seeing a `\x[0-9A-Fa-f]`.
-    HexSecond(char),
-    /// Default state.
-    Literal,
 }

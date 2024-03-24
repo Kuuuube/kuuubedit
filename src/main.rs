@@ -3,10 +3,10 @@ mod macros;
 use operations::Operation;
 mod commands;
 mod args_parser;
+mod string_parse;
+mod kuuubediterror;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
-use onig::Regex;
 
 fn main() {
     let args: args_parser::Args = args_parser::parse_args();
@@ -36,38 +36,15 @@ fn main() {
         file_buffer.clear();
         file.seek(std::io::SeekFrom::Start(0)).unwrap();
 
-        let commands = match commands::get_commands() {
-            Some(some) => some,
-            None => { println!("Invalid command or incorrect number of command params"); continue }
-        };
+        let mut commands = unwrap_result_or_continue!(commands::get_commands(&args), "");
 
-        if !args.no_buf && commands.no_buffer {
-            println!("This command is only available when the `--no-buf` arg is passed");
-            continue;
+        if args.undo && commands.destructive {
+            previous_file_contents = Some(file_contents.clone());
         }
 
-        let find_regex = match Regex::new(&commands.find) {
-            Ok(ok) => ok,
-            Err(err) => { println!("Failed to compile regex: {}", err); continue },
-        };
+        let mut end_loop = if args.no_buf { true } else { false };
 
-        if &commands.output_file != &String::default() && std::fs::canonicalize(Path::new(&commands.output_file)).unwrap_or_default() == std::fs::canonicalize(Path::new(file_path)).unwrap_or_default() {
-            println!("Cannot overwrite currently open file");
-            continue;
-        }
-
-        let output_file = File::create(commands.output_file);
-
-        let mut end_loop = false;
-
-        while !end_loop {
-            if args.no_buf {
-                end_loop = true;
-            }
-            if args.undo && commands.destructive {
-                previous_file_contents = Some(file_contents.clone());
-            }
-
+        loop {
             if !args.no_buf {
                 if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
                     file_buffer.clear();
@@ -88,28 +65,26 @@ fn main() {
             }
 
             if commands.operation == Operation::Find {
-                unwrap_result_or_continue!(operations::find(&find_regex, &file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to complete find");
+                commands.output_file = unwrap_result_or_break!(operations::find(&commands.find_regex, &file_contents, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Replace {
-                file_contents = unwrap_result_or_continue!(operations::replace(&find_regex, &commands.replace, &file_contents),"Failed to complete replace");
-                unwrap_result_or_continue!(operations::write(&file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to write file");
+                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents),"Failed to complete replace");
+                commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::ReplaceActive {
-                file_contents = unwrap_result_or_continue!(operations::replace(&find_regex, &commands.replace, &file_contents), "Failed to complete replace");
+                file_contents = unwrap_result_or_break!(operations::replace(&commands.find_regex, &commands.replace, &file_contents), "Failed to complete replace");
             } else if commands.operation == Operation::Write {
-                unwrap_result_or_continue!(operations::write(&file_contents, unwrap_result_or_continue!(&output_file, "Failed to create output file")), "Failed to write file");
+                commands.output_file = unwrap_result_or_break!(operations::write(&file_contents, commands.output_file), "Failed to write file");
             } else if commands.operation == Operation::Output {
-                unwrap_result_or_continue!(operations::output(&file_contents), "Failed to output file");
+                unwrap_result_or_break!(operations::output(&file_contents), "Failed to output file");
             } else if commands.operation == Operation::Undo {
-                if !args.undo {
-                    println!("Undo is only available when the `--undo` arg is passed");
-                    continue;
-                }
-                file_contents = unwrap_option_or_continue!(previous_file_contents, "Failed to undo, file history not available");
+                file_contents = unwrap_option_or_break!(previous_file_contents, "Failed to undo, file history not available");
                 previous_file_contents = None;
             } else if commands.operation == Operation::Quit {
                 return;
             }
 
             file_buffer.resize(buffer_size as usize, b'\x00');
+
+            if end_loop { break; }
         }
     }
 }
