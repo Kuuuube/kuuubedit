@@ -45,6 +45,10 @@ fn main() {
         let mut end_loop = if args.no_buf { true } else { false };
 
         loop {
+            if commands.operation == Operation::Quit {
+                return;
+            }
+
             if !args.no_buf {
                 if file.stream_position().unwrap() + buffer_size > file.metadata().unwrap().len() {
                     file_buffer.clear();
@@ -78,13 +82,11 @@ fn main() {
             } else if commands.operation == Operation::Undo {
                 file_contents = unwrap_option_or_break!(previous_file_contents, "Failed to undo, file history not available");
                 previous_file_contents = None;
-            } else if commands.operation == Operation::Quit {
-                return;
             }
 
-            file_buffer.resize(buffer_size as usize, b'\x00');
-
             if end_loop { break; }
+
+            file_buffer.resize(buffer_size as usize, b'\x00');
         }
     }
 }
