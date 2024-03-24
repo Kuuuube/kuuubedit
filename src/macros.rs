@@ -3,7 +3,14 @@ macro_rules! unwrap_result_or_continue {
     ($res:expr, $msg:tt) => {
         match $res {
             Ok(ok) => ok,
-            Err(err) => { println!("{}: {}", $msg, err); continue; }
+            Err(err) => {
+                if $msg.len() > 0 {
+                    println!("{}: {}", $msg, err);
+                } else {
+                    println!("{}", err);
+                }
+                continue;
+            }
         }
     };
     ($res:expr) => {
