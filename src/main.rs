@@ -36,6 +36,7 @@ fn main() {
         let mut commands = unwrap_result_or_continue!(commands::get_commands(&args), "");
 
         unwrap_result_or_continue!(file.rewind(), "Failed to reset file stream position");
+        file_buffer.resize(buffer_size as usize, 0u8);
 
         if args.undo && commands.destructive {
             previous_file_contents = Some(file_contents.clone());
