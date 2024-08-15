@@ -35,7 +35,7 @@ fn main() {
     loop {
         let mut commands = unwrap_result_or_continue!(commands::get_commands(&args), "");
 
-        unwrap_result_or_continue!(file.seek(std::io::SeekFrom::Start(0)), "Failed to reset file stream position");
+        unwrap_result_or_continue!(file.rewind(), "Failed to reset file stream position");
 
         if args.undo && commands.destructive {
             previous_file_contents = Some(file_contents.clone());
