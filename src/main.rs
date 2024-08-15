@@ -47,6 +47,9 @@ fn main() {
         loop {
             if commands.operation == Operation::Quit {
                 return;
+            } else if commands.operation == Operation::Help {
+                println!("{}", include_str!("./commands_help.txt"));
+                break;
             } else if commands.operation == Operation::View {
                 unwrap_result_or_break!(file.seek(std::io::SeekFrom::Start(commands.view_start)), "Failed to seek in file");
                 let mut file_view_buffer = vec![0u8; commands.view_length];

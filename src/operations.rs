@@ -31,7 +31,8 @@ pub enum Operation {
     View,
     Output,
     Undo,
-    Quit
+    Quit,
+    Help
 }
 
 impl Default for Operation {

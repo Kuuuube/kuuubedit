@@ -17,11 +17,12 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
         "u" => commands.operation = Operation::Undo,
         "q" => commands.operation = Operation::Quit,
         "v" => commands.operation = Operation::View,
+        "h" | "help" => commands.operation = Operation::Help,
         _ => commands.operation = Err(KuuubeditError::CommandName)?
     }
 
     match &commands.operation {
-        Operation::Find | Operation::Replace | Operation::Write | Operation::Quit | Operation::View => {}
+        Operation::Find | Operation::Replace | Operation::Write | Operation::Quit | Operation::View | Operation::Help => {}
         Operation::ReplaceActive | Operation::Output | Operation::Undo => if !args.no_buf { Err(KuuubeditError::CommandBuffer)? },
     }
 
@@ -52,7 +53,7 @@ pub fn get_commands(args: &crate::args_parser::Args) -> Result<Commands, Box<dyn
             commands.replace = unescape(input_split.get(2).ok_or(KuuubeditError::CommandParams)?)?;
             commands.destructive = true;
         },
-        Operation::Output | Operation::Undo | Operation::Quit => {}
+        Operation::Output | Operation::Undo | Operation::Quit | Operation::Help => {}
     };
     return Ok(commands);
 }
